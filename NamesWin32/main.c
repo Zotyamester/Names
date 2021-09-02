@@ -191,7 +191,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             StackClear(&g_lpsRedo);
 
 
-                            WCHAR* mov = buf;
+                            WCHAR* mov = ((WCHAR*)buf) + 1;
                             while (1)
                             {
                                 WCHAR* next = wcschr(mov, L'\r');
@@ -200,7 +200,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                                     break;
                                 }
                                 *next = L'\0';
-                                if (!IsWhitespace(buf) && SendDlgItemMessage(hwnd, IDC_NAMES, LB_FINDSTRING, 0, (LPARAM)mov) == LB_ERR)
+                                if (!IsWhitespace(mov) && SendDlgItemMessage(hwnd, IDC_NAMES, LB_FINDSTRING, 0, (LPARAM)mov) == LB_ERR)
                                 {
                                     SendDlgItemMessage(hwnd, IDC_NAMES, LB_ADDSTRING, 0, (LPARAM)mov);
                                 }
@@ -231,25 +231,30 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                     for (DWORD i = 0; i < listCount; i++)
                     {
-                        dwLength += SendDlgItemMessage(hwnd, IDC_NAMES, LB_GETTEXTLEN, i, 0) + 2; // plus CR LF
+                        dwLength += SendDlgItemMessage(hwnd, IDC_NAMES, LB_GETTEXTLEN, i, 0) + 2; // length + CR LF
                     }
 
-                    WCHAR* buf = GlobalAlloc(GPTR, (dwLength + 1) * sizeof(WCHAR));
+                    dwLength++; // BOM
+
+                    CHAR* buf = GlobalAlloc(GPTR, (dwLength + 1) * sizeof(WCHAR)); // length + NUL
                     if (!buf)
                     {
                         MessageBox(hwnd, L"Could not allocate memory.", L"Error!", MB_ICONERROR | MB_OK);
                         return 0;
                     }
 
-                    WCHAR* mov = buf;
+                    buf[0] = 0xFF;
+                    buf[1] = 0xFE;
+
+                    WCHAR* mov = ((WCHAR*)buf) + 1;
 
                     for (DWORD i = 0; i < listCount; i++)
                     {
                         DWORD dwTextLength = SendDlgItemMessage(hwnd, IDC_NAMES, LB_GETTEXTLEN, i, 0);
                         SendDlgItemMessage(hwnd, IDC_NAMES, LB_GETTEXT, i, mov);
                         mov += dwTextLength;
-                        *mov++ = '\r';
-                        *mov++ = '\n';
+                        *mov++ = L'\r';
+                        *mov++ = L'\n';
                     }
 
                     HFILE hFile = CreateFile(szPath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -263,7 +268,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         DWORD dwBytesToWrite = dwLength * sizeof(WCHAR);
                         while (dwBytesWritten < dwBytesToWrite)
                         {
-                            if (!WriteFile(hFile, ((CHAR*)buf) + dwBytesWritten, dwBytesToWrite - dwBytesWritten, &dwBytesWritten, NULL))
+                            if (!WriteFile(hFile, buf + dwBytesWritten, dwBytesToWrite - dwBytesWritten, &dwBytesWritten, NULL))
                             {
                                 MessageBox(hwnd, L"Could not write to file.", L"Error!", MB_ICONERROR | MB_OK);
                                 break;
