@@ -79,7 +79,7 @@ namespace winrt::NamesUWP::implementation
         {
             Clear();
 
-            winrt::Windows::Foundation::Collections::IVector<winrt::hstring> lines = co_await winrt::Windows::Storage::FileIO::ReadLinesAsync(file);
+            winrt::Windows::Foundation::Collections::IVector<winrt::hstring> lines = co_await winrt::Windows::Storage::FileIO::ReadLinesAsync(file, winrt::Windows::Storage::Streams::UnicodeEncoding::Utf16LE);
             for (int i = 0; i < lines.Size(); i++)
             {
                 const winrt::hstring line = lines.GetAt(i);
@@ -109,7 +109,7 @@ namespace winrt::NamesUWP::implementation
 
             winrt::Windows::Storage::CachedFileManager::DeferUpdates(file);
 
-            co_await winrt::Windows::Storage::FileIO::WriteLinesAsync(file, lines);
+            co_await winrt::Windows::Storage::FileIO::WriteLinesAsync(file, lines, winrt::Windows::Storage::Streams::UnicodeEncoding::Utf16LE);
 
             winrt::Windows::Storage::Provider::FileUpdateStatus status = co_await winrt::Windows::Storage::CachedFileManager::CompleteUpdatesAsync(file);
             if (status == winrt::Windows::Storage::Provider::FileUpdateStatus::Failed)

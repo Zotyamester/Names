@@ -53,7 +53,7 @@ namespace NamesWPF
             if (ofd.ShowDialog() == true)
             {
                 Clear();
-                using (StreamReader sr = new StreamReader(ofd.FileName))
+                using (StreamReader sr = new StreamReader(ofd.FileName, Encoding.Unicode))
                 {
                     string line;
                     while ((line = sr.ReadLine()) != null)
@@ -69,7 +69,7 @@ namespace NamesWPF
             SaveFileDialog sfd = new SaveFileDialog();
             if (sfd.ShowDialog() == true)
             {
-                using (StreamWriter sw = new StreamWriter(sfd.FileName))
+                using (StreamWriter sw = new StreamWriter(sfd.FileName, false, Encoding.Unicode))
                 {
                     foreach (string item in lstNames.Items)
                     {

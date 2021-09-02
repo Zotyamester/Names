@@ -45,7 +45,7 @@ namespace NamesWinForms
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 Clear();
-                using (StreamReader sr = new StreamReader(ofd.FileName))
+                using (StreamReader sr = new StreamReader(ofd.FileName, Encoding.Unicode))
                 {
                     string line;
                     while ((line = sr.ReadLine()) != null)
@@ -64,7 +64,7 @@ namespace NamesWinForms
             SaveFileDialog sfd = new SaveFileDialog();
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                using (StreamWriter sw = new StreamWriter(sfd.FileName))
+                using (StreamWriter sw = new StreamWriter(sfd.FileName, false, Encoding.Unicode))
                 {
                     for (int i = 0; i < lvNames.Items.Count; i++)
                     {
